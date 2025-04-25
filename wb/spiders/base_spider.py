@@ -529,7 +529,7 @@ class BaseSpider(scrapy.Spider):
         now = datetime.now()
 
         for row in self.visiting_urls:
-            string = row.encode("utf8") + "_" + str(self.allowed_domains[0])
+            string = row + "_" + str(self.allowed_domains[0])
             web_key = hashlib.md5(str(string).encode('utf-8')).hexdigest()
             sql = "INSERT INTO " + self.name +  """(url,crawled_time, web_key) VALUES  ('%s','%s','%s')""" % (row,str(now), web_key)
             self.filter_cursor.execute(sql)
