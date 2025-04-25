@@ -388,33 +388,33 @@ class TuyenGiaoPhuYenGovVNSpider(BaseSpider):
             web_title = ''
             for i in response.selector.xpath(response.meta['xpath_config']['post_title']).extract():
                 web_title  = web_title + i.strip()
-            item['web_title'] = web_title.encode('utf-8')
+            item['web_title'] = web_title
         except Exception:
             item['web_title']    = ""
         extracted_desc = response.selector.xpath(response.meta['xpath_config']['post_intro']).extract()
         if len(extracted_desc) > 0:
-            item['web_lead'] = extracted_desc[0].strip().encode('utf-8')
+            item['web_lead'] = extracted_desc[0].strip()
         else:
             item['web_lead'] = item['web_title']
 
         # print response.meta['xpath_config']['post_content']
-        item['web_content'] = Helper()._join_data(" ", response.selector.xpath(response.meta['xpath_config']['post_content']).extract()).replace(r" +", " ").strip().encode('utf-8')
-        item['web_author'] = Helper()._join_data(",", response.selector.xpath(response.meta['xpath_config']['post_author']).extract()).strip().encode('utf-8')
+        item['web_content'] = Helper()._join_data(" ", response.selector.xpath(response.meta['xpath_config']['post_content']).extract()).replace(r" +", " ").strip()
+        item['web_author'] = Helper()._join_data(",", response.selector.xpath(response.meta['xpath_config']['post_author']).extract()).strip()
         item['web_author_link'] = ""
         img_link = response.selector.xpath(response.meta['xpath_config']['post_content_image']).extract()
         if len(img_link) > 0:
-            item['web_image'] = img_link[0].strip().encode('utf-8')
+            item['web_image'] = img_link[0].strip()
         else:
             item['web_image'] = ""
-        item['web_category_name'] = response.meta['category_name'].strip().encode("utf-8")
-        item['web_category_url'] = response.meta['category_url'].strip().encode('utf-8')
+        item['web_category_name'] = response.meta['category_name'].strip()
+        item['web_category_url'] = response.meta['category_url'].strip()
         # get like count
         item['web_like_count'] = data_shares["total_like"]
         item['web_share_count'] = data_shares["total_share"]
         item['web_child_count'] = data_shares["total_comment"]
         item['web_url_comment'] = ""
 
-        item['web_link'] = response.meta['post_url'].strip().encode('utf-8')
+        item['web_link'] = response.meta['post_url'].strip()
         item['web_domain_id'] = response.meta['domain_id']
         item['web_domain_name'] = response.meta['domain']
         #web_post_type: 0 is post, 1 is comment, 2 is reply
@@ -434,7 +434,7 @@ class TuyenGiaoPhuYenGovVNSpider(BaseSpider):
         else:
             item['web_created'] = self.format_datetime("")
 
-        item['web_tag'] = Helper()._join_data(",", response.selector.xpath(response.meta['xpath_config']['post_tags']).extract()).strip().encode('utf-8')
+        item['web_tag'] = Helper()._join_data(",", response.selector.xpath(response.meta['xpath_config']['post_tags']).extract()).strip()
         item['web_group'] = self.group
         item['web_type'] = 0
         item['web_price'] = self.article_price(item,response.meta["pay"])
