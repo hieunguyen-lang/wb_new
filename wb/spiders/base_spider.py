@@ -2,32 +2,18 @@
 
 __author__ = 'VuongNM'
 
-import configparser
-# from scrapy import settings
-from scrapy.http import Request
-import scrapy
-import time
-import sys
-import os
-from scrapy.utils.project import get_project_settings
+import os, time, scrapy, mysql.connector, logging, re, hashlib, redis, requests, configparser
+
 from .helper import Helper
+from scrapy.utils.project import get_project_settings
 from .dispatcherLib import DispatcherLibrary
-from scrapy import signals
 from pydispatch import dispatcher
-# import MySQLdb
-import mysql.connector
-import logging
-from datetime import datetime 
-import re
-import hashlib
-import pika
-from unidecode import unidecode
-import redis
+from scrapy.http import Request
 from scrapy.selector import Selector
-# from urlparse import urlparse
 from urllib.parse import urlparse
-import urllib
-import requests
+from scrapy import signals
+from datetime import datetime
+from unidecode import unidecode
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -61,10 +47,6 @@ class BaseSpider(scrapy.Spider):
 
         settings = get_project_settings()
 
-        extra_config = configparser.ConfigParser()
-        extra_config.read(settings.get('EXTRA_CONFIG_FILE'))
-        self.extra_config = extra_config
-
         parse_cfg = configparser.ConfigParser()
         parse_cfg.read(settings.get('PARSER_CONFIG_FILE'))
         self.parse_cfg = parse_cfg
@@ -74,7 +56,6 @@ class BaseSpider(scrapy.Spider):
         else:
             self.group = group
 
-        
         self.crawl_one_url = url
         self.crawl_one_cate = cate
         self.debug= debug
@@ -544,55 +525,6 @@ class BaseSpider(scrapy.Spider):
 
         return ret
 
-    def get_xpaths_mysql(self):
-        cf_domain = self.allowed_domains[0]
-        ret = {}
-        try:
-            sql = """SELECT xpath_title, xpath_content, xpath_post_created_at, xpath_tags, xpath_post_author, xpath_category_id, xpath_post_id, xpath_post_url, xpath_next, xpath_post_intro, xpath_post_image, xpath_category_name FROM xpaths WHERE domain='%s'"""
-            self.monitaz_cursor.execute(sql % (cf_domain))
-            # print "================"
-            row = self.monitaz_cursor.fetchone()
-            if row:
-                xpath_title, xpath_content, xpath_post_created_at, xpath_tags, xpath_post_author, xpath_category_id, xpath_post_id, xpath_post_url, xpath_next, xpath_post_intro, xpath_post_image, xpath_category_name = row
-                #xpath required
-                print ("[INFO] GET XPATH TO DB SUCCESS")
-                xpaths = {
-                    "post_title": xpath_title,
-                    "post_content": xpath_content,
-                    "post_created_at": xpath_post_created_at,
-                    "post_tags": xpath_tags,
-                    "post_author": xpath_post_author,
-                    "post_category_id": xpath_category_id,
-                    "post_id": xpath_post_id,
-                    "post_url": xpath_post_url,
-                    "next_page": xpath_next,
-                    "post_intro": xpath_post_intro,
-                    "post_content_image": xpath_post_image,
-                    "post_category_name": xpath_category_name
-                }
-
-                for key, value in xpaths.iteritems():
-                    if ( value == "" or value == None):
-                        ret[key] = "./just-a-nonsense-xpath"
-                    else:
-                        ret[key] = value
-
-                return ret
-            else:
-                #xpath required
-                print ("[INFO] GET XPATH TO DB ERROR!!!")
-                #LOG SPIDER NOT CATEGORY
-                print ("[INFO] LOG SPIDER NOT CATEGORY")
-                filename = "logs-xpath-error.txt"
-                log_text = "Domain: "+ cf_domain+" --- Spider Name: "+self.name+"\n"
-                open(filename, 'a+').write(log_text)
-                return ret 
-            # print row
-            # print "================"      
-        except (AttributeError, mysql.connector.OperationalError) as e:
-            print ('[Info] Exception generated during sql connection: ', e)
-            return ret 
-
     def insert_visiting_urls(self):
         now = datetime.now()
 
@@ -602,18 +534,6 @@ class BaseSpider(scrapy.Spider):
             sql = "INSERT INTO " + self.name +  """(url,crawled_time, web_key) VALUES  ('%s','%s','%s')""" % (row,str(now), web_key)
             self.filter_cursor.execute(sql)
         self.filterdb_conn.commit()
-
-    # def insert_visiting_urls(self):
-    #     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    #
-    #     insert_sql = f"INSERT INTO {self.name} (url, crawled_time, web_key) VALUES (%s, %s, %s)"
-    #
-    #     for url in self.visiting_urls:
-    #         unique_string = f"{url}_{self.allowed_domains[0]}"
-    #         web_key = hashlib.md5(unique_string.encode("utf-8")).hexdigest()
-    #         self.filter_cursor.execute(insert_sql, (url, now, web_key))
-    #
-    #     self.filterdb_conn.commit()
 
     def update_visited_urls(self):
         print ("[FILTER] update filter to database of size " + str(len(self.to_update_urls)))

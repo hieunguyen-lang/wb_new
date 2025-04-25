@@ -23,20 +23,11 @@ __author__ = 'DucHung'
 # //           \  \ `-.   \_\_`. _.'_/_/  -' _.' /
 # // ===========`-.`___`-.__\ \___  /__.-'_.'_.-'================
 
+import unidecode, re, json
 
-
-from datetime import datetime,date
-import time
-from datetime import timedelta
-from  dateutil import parser
-import calendar
-import unidecode
-import re
-import json
 from wb.items import WbItem
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf8')
+from datetime import datetime
+from datetime import timedelta
 
 class Helper:
     def __init__(self, *args, **kwargs):

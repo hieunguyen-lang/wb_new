@@ -22,35 +22,15 @@
 
 __author__ = 'VuongNM'
 
-import requests
-import configparser
-from scrapy import settings
-from scrapy.http import Request
-import scrapy
-import time
+import time, hashlib, logging, re, json
+
+from .base_spider import BaseSpider
 from .helper import Helper
 from .dispatcherLib import DispatcherLibrary
-from scrapy import signals
-from pydispatch import dispatcher
-# import MySQLdb
-import mysql.connector
-import logging
-from .base_spider import BaseSpider
-import re
 from datetime import datetime
-from scrapy.http import HtmlResponse
-# import cfscrape
-from scrapy.http import FormRequest
-import json
-from lxml import etree
 from lxml import html
 from html.parser import HTMLParser
-# from HTMLParser import HTMLParser
-import hashlib
-from scrapy.selector import Selector
-# from urlparse import urlparse
-from urllib.parse import urlparse
-import urllib
+from scrapy.http import Request
 
 class BaodanangSpider(BaseSpider):
     name = 'baodanang'

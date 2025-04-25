@@ -1,23 +1,16 @@
 __author__ = 'DucHung'
 # -*- coding: utf-8 -*-
 
-import configparser
-# from scrapy import settings
-from datetime import datetime
-from datetime import timedelta
-import dateutil.parser
-import time
-import mysql.connector
-import os
-from scrapy.utils.project import get_project_settings
+import time, mysql.connector, os
+
 from .helper import Helper
+from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
 class DispatcherLibrary:
     def __init__(self, service_id=None,group=None, *args, **kwargs):
-        settings = get_project_settings()
-        extra_config = configparser.ConfigParser()
-        extra_config.read(settings.get('EXTRA_CONFIG_FILE'))
-        self.extra_config = extra_config
-
         self.process_id = os.getpid()
         self.group_page = group
         self.service_id = service_id
@@ -25,10 +18,10 @@ class DispatcherLibrary:
         self.DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def mysqConnect(self):
-        self.conn = mysql.connector.connect(user=self.extra_config.get('mysql','db_username'),
-                                    passwd=self.extra_config.get('mysql','db_password'),
-                                    db=self.extra_config.get('mysql','db_name'),
-                                    host=self.extra_config.get('mysql','db_host'),
+        self.conn = mysql.connector.connect(user=os.getenv('MYSQL_USERNAME'),
+                                    passwd=os.getenv('MYSQL_PASSWD'),
+                                    db=os.getenv('MYSQL_DB'),
+                                    host=os.getenv('MYSQL_HOST'),
                                     charset="utf8", use_unicode=True)
         self.cursor = self.conn.cursor()
 
@@ -38,7 +31,6 @@ class DispatcherLibrary:
             cursor = self.conn.cursor()
             cursor.execute(sql, params)
 
-            # Chỉ commit nếu không phải SELECT
             if not sql.strip().lower().startswith("select"):
                 self.conn.commit()
 

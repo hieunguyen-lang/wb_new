@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'VuongNM'
 
-import os
-import sys
-import time
-import re
-import subprocess
-import datetime
-from termcolor import colored
-
+import os, sys, time, subprocess, re, datetime
 
 SPIDER_NAMES = [ 'bnews','24h','2sao','afamily','alobacsi','baobaohiemxahoi','baobariavungtau','baocantho','baochinhphu','baocongthuong','baodatviet','baodautu','baogiaothong','baohaiquan','baohiemxahoi','baotainguyenmoitruong','baotintuc','baovanhoa','baoxaydung','bariavungtau','bizlive','bnews','bongda360','bongdaplus','cadn','cafebiz','cafef','cafeland','camnangmuasam','congluan','congly','daibieunhandan','daidoanket','daikynguyen','daikynguyenvn','dangcongsan','dantri','danviet','dep','dientutieudung','doanhnhanonline','doanhnhansaigon','doisongphapluat','dothi','dulichvn','emdep','englishthesaigontimes','enternews','eva','giadinh','giadinhvatreem','giadinhvietnam','giaoduc','giaoducthoidai','gioitre','healthplus','ictnews','infonet','kenh14','khoahocdoisong','khoahocvacongnghevietnam','kienthuc','kinhtenongthon','landtoday','laodong','micgov','motthegioi','ndh','ngoisao','nguoiduatin','nhandan','nhandancom','nhandanorg','nld','nss','phununet','phunuonline','qdnd','saigondautu','saoonline','seatimes','soha','songkhoe','suckhoedoisong','taichinhplus','tamnhin','tapchibcvt','tapchitaichinh','tbck','tbdn','thanhnien','thethao247','thitruongtaichinh','thoibaokinhdoanh','thoibaonganhang','thoibaotaichinhvietnam','tienphong','tiin','tinmoi','tinnhanhchungkhoan','trithuccongluan','ttdn','ttvn','tuoitre','vcci','vccinews','vef','ven','vietbao','vietnamnet','vietnamplus','vietq','vietstock','viettimes','vinacorp','vir','vnba','vneconomictimes','vneconomy','vnex','vnmedia','vov','vtc','vtv','xahoithongtin','xalo','xaluan','zing' ] 
 NUM_CONCURENT_SPIDER = 2
