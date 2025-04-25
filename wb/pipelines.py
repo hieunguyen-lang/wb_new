@@ -38,9 +38,12 @@ class WbPipeline(object):
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=os.getenv('RABBIT_QUEUE'))
         self.channel.exchange_declare(exchange='the_famous_fanout', exchange_type='fanout')
+        self.channel.queue_declare(queue="monitaz_ifollow_tele", durable=True)
+        self.channel.queue_declare(queue="monitaz_ifollow_banking", durable=True)
+        self.channel.queue_declare(queue='monitaz_ifollow_check', durable=True)
+        
         self.channel.queue_bind(exchange='the_famous_fanout', queue="monitaz_ifollow_tele")
         self.channel.queue_bind(exchange='the_famous_fanout', queue="monitaz_ifollow_banking")
-        self.channel.queue_declare(queue='monitaz_ifollow_check', durable=True)
 
 
 
@@ -72,49 +75,67 @@ class WbPipeline(object):
             cursor.execute(sql, params)
         return cursor.lastrowid
 
-    def process_item(self, item, spider):
+        def process_item(self, item, spider):
         print("==== DEBUG PIPELINE ====")
 
-        if item['web_url_comment'] == "DEBUG":
-            string = str(item["web_link"]) + "_" + str(item['web_domain_name'])
+        web_link = item.get("web_link", "")
+        if isinstance(web_link, bytes):
+            web_link = web_link.decode("utf-8")
+
+        web_domain_name = item.get("web_domain_name", "")
+        if isinstance(web_domain_name, bytes):
+            web_domain_name = web_domain_name.decode("utf-8")
+
+        web_title = item.get("web_title", "")
+        if isinstance(web_title, bytes):
+            web_title = web_title.decode("utf-8")
+
+        if item.get('web_url_comment') == "DEBUG":
+            string = f"{web_link}_{web_domain_name}"
             print(string)
             key_insert = hashlib.md5(string.encode('utf-8')).hexdigest()
             print(key_insert)
 
             item_dict = dict(item)
             item_dict['web_key'] = key_insert
+
+            # FIX: convert bytes to string
+            for k, v in item_dict.items():
+                if isinstance(v, bytes):
+                    try:
+                        item_dict[k] = v.decode('utf-8')
+                    except Exception:
+                        item_dict[k] = str(v)
+
             try:
                 json_string = json.dumps(item_dict)
                 self.channel.basic_publish(exchange='',
                                            routing_key='monitaz_ifollow_check',
                                            body=json_string)
+                print("DEBUG message sent to RabbitMQ.")
             except Exception as e:
                 print("[DEBUG ERROR] Unable to publish DEBUG item to RabbitMQ:", e)
 
-            print("====== SUCCESSED PY======")
+            print("====== SUCCESSFUL DEBUG PROCESS ======")
 
         print("========================")
 
-        item['web_content'] = item['web_content'].strip()
+        # Strip content
+        item['web_content'] = item.get('web_content', '').strip()
         if item['web_content'] == "":
-            self._set_raw_null(str(item["web_link"]), str(item["web_domain_name"]), str(item["web_category_url"]),
-                               str(self.now))
+            self._set_raw_null(web_link, web_domain_name, str(item.get("web_category_url", "")), str(self.now))
             print("===========================")
             print("[XPATHS EXCEPTION] EMPTY CONTENT")
-            print(item['web_link'])
+            print(web_link)
             print("===========================")
             if issubclass(spider.__class__, BaseSpider):
-                spider.empty_contents.append(item['web_link'])
+                spider.empty_contents.append(web_link)
             return None
 
         to_return = False
-        string = str(item["web_link"]) + "_" + str(item['web_domain_name'])
+        string = f"{web_link}_{web_domain_name}"
         key_insert = hashlib.md5(string.encode('utf-8')).hexdigest()
         print("[INFO] KEY 1:", key_insert)
-
-        web_link = item["web_link"] if isinstance(item["web_link"], bytes) else item["web_link"]
-        web_domain_name = item["web_domain_name"] if isinstance(item["web_domain_name"], bytes) else \
-        item["web_domain_name"]
 
         string_http = web_link.replace("www.", "").replace("http://", "https://") + "_" + web_domain_name
         key_hash_http = hashlib.md5(string_http.encode('utf-8')).hexdigest()
@@ -132,36 +153,46 @@ class WbPipeline(object):
         duplicate_http = self.redis_exists(key_hash_http)
         duplicate_https = self.redis_exists(key_hash_https)
         duplicate_www = self.redis_exists(key_hash_www)
+        print("[DEBUG] Redis is using DB:", self.redis_db.connection_pool.connection_kwargs.get("db"))
 
         if duplicate or duplicate_http or duplicate_https or duplicate_www:
             print("[INFO] ITEM ALREADY EXISTS")
             print("[INFO] THE KEY:", key_insert)
-            print("[INFO] THE WEB LINK:", item['web_link'])
+            print("[INFO] THE WEB LINK:", web_link)
             print("[INFO] STRING KEY:", string)
         else:
             to_return = True
             try:
                 item_dict = dict(item)
-                # Bỏ doc_type (Elasticsearch 7+ không dùng nữa)
+                item_dict['web_key'] = key_insert
+
+                # FIX: convert bytes to string
+                for k, v in item_dict.items():
+                    if isinstance(v, bytes):
+                        try:
+                            item_dict[k] = v.decode('utf-8')
+                        except Exception:
+                            item_dict[k] = str(v)
+
                 res = self.es.index(index=os.getenv('ES_INDEX'), id=key_insert, body=item_dict)
 
-                item_dict['web_key'] = key_insert
                 try:
                     json_string = json.dumps(item_dict)
                     self.channel.basic_publish(exchange='the_famous_fanout', routing_key='', body=json_string)
-                    print("sub")
+                    print("Message sent to RabbitMQ successfully.")
                 except Exception as e:
                     print("[RABBITMQ ERROR] Failed to publish to RabbitMQ:", e)
 
                 self.insert_key_to_redis(key_insert)
+                print("Key inserted into Redis.")
 
             except Exception as e:
                 print("[EXCEPTION] ERROR INSERTING TO DBS")
-                print(str(e))
+                print("[EXCEPTION DETAIL]", str(e))
 
         if issubclass(spider.__class__, BaseSpider):
-            spider.visiting_urls.append(item['web_link'])
-            spider.to_update_urls.append(item['web_link'])
+            spider.visiting_urls.append(web_link)
+            spider.to_update_urls.append(web_link)
             spider.item_count += 1
 
         if to_return:
