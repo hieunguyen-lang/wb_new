@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+
+# Define here the models for your scraped items
+#
+# See documentation in:
+# http://doc.scrapy.org/en/latest/topics/items.html
+
+import scrapy
+
+
+class WbItem(scrapy.Item):
+    # define the fields for your item here like:
+    web_parent_id = scrapy.Field()
+    web_grand_parent_id = scrapy.Field()
+    web_cid = scrapy.Field()
+    web_id = scrapy.Field()
+    web_title = scrapy.Field()
+    web_lead = scrapy.Field()
+    web_content = scrapy.Field()
+    web_image = scrapy.Field()
+    web_category_name = scrapy.Field()
+    web_category_url = scrapy.Field()
+    web_author = scrapy.Field()
+    web_author_link = scrapy.Field()
+    web_like_count = scrapy.Field()
+    web_share_count = scrapy.Field()
+    web_child_count = scrapy.Field()
+    web_link = scrapy.Field()
+    web_domain_id = scrapy.Field()
+    web_domain_name = scrapy.Field()
+    web_post_type = scrapy.Field()
+    web_branch = scrapy.Field()
+    web_sub_branch = scrapy.Field()
+    web_is_crawled = scrapy.Field()
+    web_crawler_time = scrapy.Field()
+    web_created = scrapy.Field()
+    web_tag = scrapy.Field()
+    web_group = scrapy.Field()
+    web_url_comment = scrapy.Field()
+    web_type = scrapy.Field(default=0)
+    web_price = scrapy.Field(default=0)
+    is_filter_banking = scrapy.Field(default=0)
+    is_filter_education = scrapy.Field(default=0)
+    is_filter_tele = scrapy.Field(default=0)
+    is_filter_leisure = scrapy.Field(default=0)
+    is_filter_media = scrapy.Field(default=0)
+    is_filter_cele = scrapy.Field(default=0)
+    is_filter_service = scrapy.Field(default=0)
+    is_filter_property = scrapy.Field(default=0)
+    is_filter_clothing = scrapy.Field(default=0)
+    is_filter_transport = scrapy.Field(default=0)
+    is_filter_tourism = scrapy.Field(default=0)
+    is_filter_building = scrapy.Field(default=0)
+    is_filter_charity = scrapy.Field(default=0)
+    is_filter_argi = scrapy.Field(default=0)
+    is_filter_pharma = scrapy.Field(default=0)
+    is_filter_fina = scrapy.Field(default=0)
+    is_filter_food = scrapy.Field(default=0)
+    is_filter_drink = scrapy.Field(default=0)
+    is_filter_visual = scrapy.Field(default=0)
+    is_filter_it = scrapy.Field(default=0)
+    is_filter_furniture = scrapy.Field(default=0)
+    is_filter_household = scrapy.Field(default=0)
+    is_filter_other_1 = scrapy.Field(default=0)
+    is_filter_other_2 = scrapy.Field(default=0)
+    is_filter_other_3 = scrapy.Field(default=0)
+    is_filter_other_4 = scrapy.Field(default=0)
+    is_filter_other_5 = scrapy.Field(default=0)
+    is_filter_updated = scrapy.Field(default=0)
+    pass
